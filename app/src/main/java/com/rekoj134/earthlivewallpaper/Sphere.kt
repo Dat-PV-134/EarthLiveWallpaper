@@ -23,10 +23,10 @@ fun createSphere(radius: Float, stacks: Int, slices: Int): SphereMesh {
             vertices.add(y.toFloat())
             vertices.add(z.toFloat())
 
-            vertices.add(((x / radius) + 1).toFloat() / 2)
-            vertices.add(((y / radius) + 1).toFloat() / 2)
-            vertices.add(((z / radius) + 1).toFloat() / 2)
-            vertices.add(1.0f)
+            val u = j.toFloat() / slices
+            val v = i.toFloat() / stacks
+            vertices.add(u)
+            vertices.add(v)
         }
     }
 
@@ -48,3 +48,4 @@ fun createSphere(radius: Float, stacks: Int, slices: Int): SphereMesh {
 
     return SphereMesh(vertices.toFloatArray(), indices.toIntArray())
 }
+

@@ -1,10 +1,11 @@
 #version 320 es
-
 precision mediump float;
 
-in vec4 ourColor;
+in vec2 vTexCoord;
 out vec4 fragColor;
 
+uniform sampler2D earthTexture;
+
 void main() {
-    fragColor = ourColor;
+    fragColor = texture(earthTexture, vTexCoord);
 }
