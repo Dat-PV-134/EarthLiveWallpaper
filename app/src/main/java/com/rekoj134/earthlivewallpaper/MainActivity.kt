@@ -1,7 +1,10 @@
 package com.rekoj134.earthlivewallpaper
 
+import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.os.Bundle
+import android.util.Log
+import android.view.ScaleGestureDetector
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -12,6 +15,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private var rendererSet = false
 
+    private lateinit var scaleGestureDetector: ScaleGestureDetector
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
@@ -21,6 +26,7 @@ class MainActivity : AppCompatActivity() {
         initOpenGLES()
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun initOpenGLES() {
         // Kiểm tra phiên bản của OpenGLES
         val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
@@ -31,9 +37,24 @@ class MainActivity : AppCompatActivity() {
         if (supportsEs32) {
             // Set phiên bản và Renderer cho GL SurfaceView
             // Khi set EGLContextClientVersion = 3, ta đang cho GLSurfaceView biết rằng mình sử dụng phiên bản 3.0 trở lên
+            val myRenderer = MyRenderer(this@MainActivity)
             binding.myGLSurfaceView.setEGLContextClientVersion(3)
-            binding.myGLSurfaceView.setRenderer(MyRenderer(this@MainActivity))
+            binding.myGLSurfaceView.setRenderer(myRenderer)
             rendererSet = true
+
+            scaleGestureDetector = ScaleGestureDetector(this, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                override fun onScale(detector: ScaleGestureDetector): Boolean {
+                    myRenderer.scaleFactor *= detector.scaleFactor
+                    myRenderer.scaleFactor = myRenderer.scaleFactor.coerceIn(0.2f, 3.0f)
+                    Log.e("DatPV", detector.scaleFactor.toString() + " - " + myRenderer.scaleFactor.toString())
+                    return true
+                }
+            })
+
+            binding.myGLSurfaceView.setOnTouchListener {  _, event ->
+                scaleGestureDetector.onTouchEvent(event)
+                true
+            }
         } else {
             Toast.makeText(this@MainActivity, "This device doesn't support OpenGL ES 3.2", Toast.LENGTH_SHORT).show()
             return

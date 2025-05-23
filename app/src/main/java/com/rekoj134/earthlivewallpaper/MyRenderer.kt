@@ -13,6 +13,7 @@ import android.opengl.GLES32.glEnable
 import android.opengl.GLES32.glViewport
 import android.opengl.GLSurfaceView.Renderer
 import android.opengl.Matrix
+import android.util.Log
 import com.rekoj134.earthlivewallpaper.model.createSphere
 import com.rekoj134.earthlivewallpaper.util.LoggerConfig
 import com.rekoj134.earthlivewallpaper.util.ShaderHelper
@@ -36,7 +37,7 @@ class MyRenderer(private val context: Context) : Renderer {
     private val rotationMatrix = FloatArray(16)
 
     private var timeElapsed: Float = 0.0f
-    private var animationSpeed: Float = 0.2f
+    private var animationSpeed: Float = 0.1f
 
     private var program = 0
     private var VBO = 0
@@ -48,8 +49,10 @@ class MyRenderer(private val context: Context) : Renderer {
     private var skyboxProgram = 0
     private var skyboxTexture = 0
 
+    var scaleFactor = 1.0f
+
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-        val sphere = createSphere(radius = 0.8f, stacks = 62, slices = 62)
+        val sphere = createSphere(radius = 0.1f, stacks = 62, slices = 62)
         sphereVertices = sphere.vertices
         sphereIndices = sphere.indices
 
@@ -149,14 +152,7 @@ class MyRenderer(private val context: Context) : Renderer {
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
         val aspectRatio = if (width > height) width.toFloat() / height else height.toFloat() / width
 
-        Matrix.setLookAtM(viewMatrix, 0,
-            0f, 0f, -6f,
-            0f, 0f, 0f,
-            0f, 1f, 0f)
-        GLES32.glUniformMatrix4fv(1, 1, false, viewMatrix, 0)
-
         Matrix.perspectiveM(projectionMatrix, 0, 45f, 1/aspectRatio, 0.1f, 10f)
-
         val uniformLocation = GLES32.glGetUniformLocation(program, "projectionMatrix")
         GLES32.glUniformMatrix4fv(uniformLocation, 1, false, projectionMatrix, 0)
 
@@ -175,6 +171,13 @@ class MyRenderer(private val context: Context) : Renderer {
 
         GLES32.glUseProgram(program)
 
+        Matrix.setIdentityM(viewMatrix, 0)
+        Matrix.setLookAtM(viewMatrix, 0,
+            0f, 0f, -scaleFactor,
+            0f, 0f, 0f,
+            0f, 1f, 0f)
+        GLES32.glUniformMatrix4fv(1, 1, false, viewMatrix, 0)
+
         Matrix.setIdentityM(modelMatrix, 0)
 
         Matrix.setIdentityM(rotationMatrix, 0)
@@ -185,7 +188,7 @@ class MyRenderer(private val context: Context) : Renderer {
         // Add light
         glUniform3f(glGetUniformLocation(program, "lightColor"), 1f, 1f, 1f)
         glUniform3f(glGetUniformLocation(program, "lightPos"), 1.0f, 0.0f, 1.0f)
-        glUniform3f(glGetUniformLocation(program, "viewPos"), 0f, 0f, 6f)
+        glUniform3f(glGetUniformLocation(program, "viewPos"), 0f, 0f, 1f)
 
         GLES32.glBindVertexArray(VAO)
         GLES32.glDrawElements(GLES32.GL_TRIANGLES, sphereIndices.size, GLES32.GL_UNSIGNED_INT, 0)
