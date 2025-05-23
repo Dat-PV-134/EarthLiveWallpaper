@@ -1,6 +1,8 @@
 package com.rekoj134.earthlivewallpaper
 
 import android.content.Context
+import android.opengl.GLES20.glGetUniformLocation
+import android.opengl.GLES20.glUniform3f
 import android.opengl.GLES32.glClearColor
 import android.opengl.GLES32
 import android.opengl.GLES32.GL_COLOR_BUFFER_BIT
@@ -118,10 +120,12 @@ class MyRenderer(private val context: Context) : Renderer {
         vertexBuffer.put(sphereVertices)
         vertexBuffer.position(0)
         GLES32.glBufferData(GLES32.GL_ARRAY_BUFFER, sphereVertices.size * Float.SIZE_BYTES, vertexBuffer, GLES32.GL_STATIC_DRAW)
-        GLES32.glVertexAttribPointer(0, 3, GLES32.GL_FLOAT, false, 5 * Float.SIZE_BYTES, 0)
+        GLES32.glVertexAttribPointer(0, 3, GLES32.GL_FLOAT, false, 8 * Float.SIZE_BYTES, 0)
         GLES32.glEnableVertexAttribArray(0)
-        GLES32.glVertexAttribPointer(1, 2, GLES32.GL_FLOAT, false, 5 * Float.SIZE_BYTES, 3 * Float.SIZE_BYTES)
+        GLES32.glVertexAttribPointer(1, 2, GLES32.GL_FLOAT, false, 8 * Float.SIZE_BYTES, 3 * Float.SIZE_BYTES)
         GLES32.glEnableVertexAttribArray(1)
+        GLES32.glVertexAttribPointer(2, 3, GLES32.GL_FLOAT, false, 8 * Float.SIZE_BYTES, 5 * Float.SIZE_BYTES)
+        GLES32.glEnableVertexAttribArray(2)
 
         val indicesBuffer: IntBuffer = ByteBuffer
             .allocateDirect(sphereIndices.size * Int.SIZE_BYTES)
@@ -146,7 +150,7 @@ class MyRenderer(private val context: Context) : Renderer {
         val aspectRatio = if (width > height) width.toFloat() / height else height.toFloat() / width
 
         Matrix.setLookAtM(viewMatrix, 0,
-            0f, 0f, -8f,
+            0f, 0f, -6f,
             0f, 0f, 0f,
             0f, 1f, 0f)
         GLES32.glUniformMatrix4fv(1, 1, false, viewMatrix, 0)
@@ -170,13 +174,19 @@ class MyRenderer(private val context: Context) : Renderer {
         }
 
         GLES32.glUseProgram(program)
+
         Matrix.setIdentityM(modelMatrix, 0)
 
         Matrix.setIdentityM(rotationMatrix, 0)
         Matrix.setRotateM(rotationMatrix, 0, timeElapsed * 360.0f, 0.0f, 1.0f, 0.0f)
         Matrix.multiplyMM(modelMatrix, 0, modelMatrix, 0, rotationMatrix, 0)
-
         GLES32.glUniformMatrix4fv(0, 1, false, modelMatrix, 0)
+
+        // Add light
+        glUniform3f(glGetUniformLocation(program, "lightColor"), 1f, 1f, 1f)
+        glUniform3f(glGetUniformLocation(program, "lightPos"), 1.0f, 0.0f, 1.0f)
+        glUniform3f(glGetUniformLocation(program, "viewPos"), 0f, 0f, 6f)
+
         GLES32.glBindVertexArray(VAO)
         GLES32.glDrawElements(GLES32.GL_TRIANGLES, sphereIndices.size, GLES32.GL_UNSIGNED_INT, 0)
         GLES32.glBindVertexArray(0)

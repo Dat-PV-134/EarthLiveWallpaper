@@ -27,6 +27,14 @@ fun createSphere(radius: Float, stacks: Int, slices: Int): SphereMesh {
             val v = i.toFloat() / stacks
             vertices.add(u)
             vertices.add(v)
+
+            // Normalized normal vector
+            val nx = x / radius
+            val ny = y / radius
+            val nz = z / radius
+            vertices.add(nx.toFloat())
+            vertices.add(ny.toFloat())
+            vertices.add(nz.toFloat())
         }
     }
 
