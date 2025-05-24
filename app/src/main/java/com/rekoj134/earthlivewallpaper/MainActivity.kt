@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -51,8 +52,25 @@ class MainActivity : AppCompatActivity() {
                 }
             })
 
+            var previousX = 0f
+            var previousY = 0f
             binding.myGLSurfaceView.setOnTouchListener {  _, event ->
                 scaleGestureDetector.onTouchEvent(event)
+
+                if (event.pointerCount == 1) {
+                    when (event.action) {
+                        MotionEvent.ACTION_MOVE -> {
+                            val dx = event.x - previousX
+                            val dy = event.y - previousY
+
+                            myRenderer.yRotation += dx * 0.5f
+                            myRenderer.xRotation += dy * 0.5f
+                        }
+                    }
+                    previousX = event.x
+                    previousY = event.y
+                }
+
                 true
             }
         } else {

@@ -49,6 +49,8 @@ class MyRenderer(private val context: Context) : Renderer {
     private var skyboxProgram = 0
     private var skyboxTexture = 0
 
+    var xRotation = 0f
+    var yRotation = 0f
     var scaleFactor = 1.0f
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
@@ -179,9 +181,13 @@ class MyRenderer(private val context: Context) : Renderer {
         GLES32.glUniformMatrix4fv(1, 1, false, viewMatrix, 0)
 
         Matrix.setIdentityM(modelMatrix, 0)
+        Matrix.rotateM(modelMatrix, 0, xRotation, 1f, 0f, 0f)
+        Matrix.rotateM(modelMatrix, 0, yRotation, 0f, 1f, 0f)
 
         Matrix.setIdentityM(rotationMatrix, 0)
         Matrix.setRotateM(rotationMatrix, 0, timeElapsed * 360.0f, 0.0f, 1.0f, 0.0f)
+        Matrix.multiplyMM(modelMatrix, 0, modelMatrix, 0, rotationMatrix, 0)
+
         Matrix.multiplyMM(modelMatrix, 0, modelMatrix, 0, rotationMatrix, 0)
         GLES32.glUniformMatrix4fv(0, 1, false, modelMatrix, 0)
 
