@@ -63,8 +63,11 @@ class MainActivity : AppCompatActivity() {
                             val dx = event.x - previousX
                             val dy = event.y - previousY
 
-                            myRenderer.yRotation += dx * 0.5f
-                            myRenderer.xRotation += dy * 0.5f
+                            myRenderer.theta += dx * 0.5f
+                            myRenderer.phi -= dy * 0.5f
+
+                            // Giới hạn phi để tránh lật camera
+                            myRenderer.phi = myRenderer.phi.coerceIn(-89f, 89f)
                         }
                     }
                     previousX = event.x

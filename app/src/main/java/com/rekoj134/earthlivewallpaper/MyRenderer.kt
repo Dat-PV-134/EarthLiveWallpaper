@@ -26,6 +26,8 @@ import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
+import kotlin.math.cos
+import kotlin.math.sin
 
 class MyRenderer(private val context: Context) : Renderer {
     private lateinit var sphereVertices: FloatArray
@@ -52,6 +54,9 @@ class MyRenderer(private val context: Context) : Renderer {
     var xRotation = 0f
     var yRotation = 0f
     var scaleFactor = 1.0f
+
+    var theta = 0f
+    var phi = 0f
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         val sphere = createSphere(radius = 0.1f, stacks = 62, slices = 62)
@@ -145,7 +150,7 @@ class MyRenderer(private val context: Context) : Renderer {
         GLES32.glActiveTexture(GLES32.GL_TEXTURE0)
         GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, earthTexture)
         GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "earthTexture"), 0)
-
+        
         GLES32.glBindBuffer(GLES32.GL_ARRAY_BUFFER, 0)
         GLES32.glBindVertexArray(0)
         GLES32.glBindBuffer(GLES32.GL_ELEMENT_ARRAY_BUFFER, 0)
@@ -174,15 +179,27 @@ class MyRenderer(private val context: Context) : Renderer {
         GLES32.glUseProgram(program)
 
         Matrix.setIdentityM(viewMatrix, 0)
+//        Matrix.setLookAtM(viewMatrix, 0,
+//            0f, 0f, -scaleFactor,
+//            0f, 0f, 0f,
+//            0f, 1f, 0f)
+
+        // Tính vị trí camera theo tọa độ hình cầu
+        val radius = scaleFactor
+        val camX = (radius * cos(Math.toRadians(phi.toDouble())) * sin(Math.toRadians(theta.toDouble()))).toFloat()
+        val camY = (radius * sin(Math.toRadians(phi.toDouble()))).toFloat()
+        val camZ = (radius * cos(Math.toRadians(phi.toDouble())) * cos(Math.toRadians(theta.toDouble()))).toFloat()
+
         Matrix.setLookAtM(viewMatrix, 0,
-            0f, 0f, -scaleFactor,
-            0f, 0f, 0f,
-            0f, 1f, 0f)
+            camX, camY, camZ,  // camera position
+            0f, 0f, 0f,        // looking at origin (Earth)
+            0f, 1f, 0f)        // up vector
+
         GLES32.glUniformMatrix4fv(1, 1, false, viewMatrix, 0)
 
         Matrix.setIdentityM(modelMatrix, 0)
-        Matrix.rotateM(modelMatrix, 0, xRotation, 1f, 0f, 0f)
-        Matrix.rotateM(modelMatrix, 0, yRotation, 0f, 1f, 0f)
+//        Matrix.rotateM(modelMatrix, 0, xRotation, 1f, 0f, 0f)
+//        Matrix.rotateM(modelMatrix, 0, yRotation, 0f, 1f, 0f)
 
         Matrix.setIdentityM(rotationMatrix, 0)
         Matrix.setRotateM(rotationMatrix, 0, timeElapsed * 360.0f, 0.0f, 1.0f, 0.0f)
